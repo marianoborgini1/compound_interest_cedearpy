@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Panel de Simulación</title>
+</head>
+<body>
+    <header>
+        <h1>Simulador FIC</h1>
+        <nav>
+            <a href="{{ url_for('auth.logout') }}" class="btn-logout-header">Cerrar Sesión</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="dashboard-container">
+            <div class="welcome-header">
+                <h2>¡Hola, {{ user }}!</h2>
+                <p>Configurá tu proyección</p>
+            </div>
+
+            <form action="/simular" method="post">
+                <div class="seccion-inputs">
+                    <h3>1. Datos del FIC</h3>
+                    <div class="inputs-grid">
+                        <div class="input-group">
+                            <label>Capital Inicial ($)</label>
+                            <input type="number" name="capital_inicial" placeholder="Ej: 100000" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Aporte Mensual ($)</label>
+                            <input type="number" name="aporte_mensual" placeholder="Ej: 20000" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Tasa Anual (%)</label>
+                            <input type="number" step="0.01" name="tasa_interes" placeholder="Ej: 8.5" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Años</label>
+                            <input type="number" name="anios" placeholder="Ej: 10" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="seccion-cedear">
+                    <label>¿Comparar con un CEDEAR? (Opcional)</label>
+                    <select name="cedear">
+                        <option value="" selected>-- Sin CEDEAR --</option>
+                        <option value="MSFT">Microsoft (MSFT)</option>
+                        <option value="META">Meta (META)</option>
+                        <option value="KO">Coca-Cola (KO)</option>
+                        <option value="JNJ">Johnson & Johnson (JNJ)</option>
+                    </select>
+                </div>
+
+                <input type="submit" value="Calcular Proyección" id="btn-calcular">
+            </form>
+        </div>
+    </main>
+</body>
+</html>
