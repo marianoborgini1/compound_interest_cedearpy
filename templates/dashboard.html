@@ -4,20 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo_sin_txt.ico') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <title>Panel de Simulación</title>
+    <title>Dashboard - FIC CedearPy</title>
 </head>
-<body>
-    <header>
+
+<body class="landing-body">
+    <div class="tradingview-widget-container" style="background: #0f172a; border-bottom: 1px solid #1e293b; width: 100%; overflow: hidden; display: block;">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+        {
+            "symbols": [
+                { "proName": "AMEX:SPY", "title": "S&P 500" },
+                { "proName": "NASDAQ:QQQ", "title": "Nasdaq 100" },
+                { "proName": "NASDAQ:MSFT", "title": "Microsoft" },
+                { "proName": "NASDAQ:AAPL", "title": "Apple" },
+                { "proName": "NASDAQ:NVDA", "title": "Nvidia" },
+                { "proName": "NASDAQ:AMZN", "title": "Amazon" },
+                { "proName": "NASDAQ:GOOGL", "title": "Google" },
+                { "proName": "NASDAQ:META", "title": "Meta" },
+                { "proName": "NASDAQ:TSLA", "title": "Tesla" },
+                { "proName": "NYSE:KO", "title": "Coca-Cola" },
+                { "proName": "NYSE:JNJ", "title": "Johnson & Johnson" }
+            ],
+            "showSymbolLogo": true,
+            "colorTheme": "dark",
+            "isTransparent": true,
+            "displayMode": "adaptive",
+            "locale": "es"
+        }
+        </script>
+    </div>
+
+    <header style="padding-top: 1rem;">
         <div class="logo-container">
-            <a href="{{ url_for('index') }}">
-                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="FIC CedearPy Logo" class="app-logo">
+            <a href="{{ url_for('fic.fic_simulador') }}"> 
+                <img id="logo-para-pdf" src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="app-logo">
             </a>
         </div>
-        <nav>
+        
+        <div class="menu-toggle" id="mobile-menu">
+            <i class="fas fa-bars"></i>
+        </div>
+
+        <nav id="nav-menu">
             <a href="#contacto" class="btn-contact-header"><i class="fas fa-envelope"></i> Contacto</a>
-            <a href="{{ url_for('auth.logout') }}" class="btn-logout-header"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            <a href="{{ url_for('fic.mis_simulaciones') }}" class="btn-contact-header"><i class="fas fa-history"></i> Mis Simulaciones</a>
+            
+            <a href="{{ url_for('auth.forget_password') }}" class="btn-contact-header"><i class="fas fa-key"></i> Clave</a>
+            
+            <a href="{{ url_for('auth.logout') }}" class="btn-logout-header"><i class="fas fa-sign-out-alt"></i> Salir</a>
         </nav>
     </header>
 
@@ -49,126 +86,187 @@
             </div>
         </div>
 
-        <div class="dashboard-container">
+        <div class="dashboard-container" style="max-width: 600px;">
             <div class="welcome-header">
-                <h2>¡Hola, {{ user }}!</h2>
-                <p>Configurá tu proyección</p>
+                <h2>Simulador de Interés Compuesto</h2>
+                <p>¡Hola, <strong>{{ user }}</strong>! Proyectá tu futuro financiero.</p>
             </div>
 
-            <form action="/simulator" method="post">
-                <div class="seccion-inputs">
-                    <h3>1. Datos del FIC</h3>
-                    <div class="inputs-grid">
-                        <div class="input-group">
-                            <label>Capital Inicial</label>
-                            <div class="input-wrapper">
-                                <span class="moneda">$</span>
-                                <input type="number" name="capital_inicial" placeholder="100000" required value="{{ cap_ini }}">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        {% if category == 'success' %}
+                            <div style="background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 10px; border-radius: 5px; text-align: center; margin-bottom: 15px; border: 1px solid #10b981;">
+                                {{ message }}
                             </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form action="{{ url_for('fic.fic_simulador') }}" method="post">
+                <div class="inputs-grid">
+                    <div class="input-group">
+                        <label>Capital Inicial ($)</label>
+                        <div class="input-wrapper">
+                            <span class="moneda">$</span>
+                            <input type="number" name="capital_inicial" step="0.01" value="{{ cap_ini if cap_ini else '' }}" required>
                         </div>
-                        <div class="input-group">
-                            <label>Aporte Mensual</label>
-                            <div class="input-wrapper">
-                                <span class="moneda">$</span>
-                                <input type="number" name="aporte_mensual" placeholder="20000" required value="{{ aporte }}">
-                            </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Aporte Mensual ($)</label>
+                        <div class="input-wrapper">
+                            <span class="moneda">$</span>
+                            <input type="number" name="aporte_mensual" step="0.01" value="{{ aporte if aporte else '' }}" required>
                         </div>
-                        <div class="input-group">
-                            <label>Tasa Anual (%)</label>
-                            <input type="number" step="0.01" name="tasa_interes" placeholder="8.5" required value="{{ tasa }}">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Plazo (Años)</label>
+                        <div class="input-wrapper">
+                            <span class="moneda"><i class="fas fa-calendar-alt" style="font-size: 0.8rem;"></i></span>
+                            <input type="number" name="años" value="{{ años if años else '' }}" required>
                         </div>
-                        <div class="input-group">
-                            <label>Años</label>
-                            <input type="number" name="años" placeholder="10" required value="{{ años }}">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Tasa Anual Estimada (%)</label>
+                        <div class="input-wrapper">
+                            <span class="moneda">%</span>
+                            <input type="number" name="tasa_interes" step="0.01" value="{{ tasa if tasa else '' }}" required>
                         </div>
                     </div>
                 </div>
 
                 <div class="seccion-cedear">
-                    <label>¿Comparar con un CEDEAR? (Opcional)</label>
-                    <select name="cedear">
-                        <option value="" {% if not nombre_cedear %}selected{% endif %}>-- Sin CEDEAR --</option>
-                        <option value="MSFT" {% if nombre_cedear == 'MSFT' %}selected{% endif %}>Microsoft (MSFT)</option>
-                        <option value="META" {% if nombre_cedear == 'META' %}selected{% endif %}>Meta (META)</option>
-                        <option value="KO" {% if nombre_cedear == 'KO' %}selected{% endif %}>Coca-Cola (KO)</option>
-                        <option value="JNJ" {% if nombre_cedear == 'JNJ' %}selected{% endif %}>Johnson & Johnson (JNJ)</option>
-                    </select>
+                    <h3><i class="fas fa-chart-line"></i> Comparar con CEDEAR (Opcional)</h3>
+                    <div class="input-group">
+                        <label>Elegí un activo para comparar rendimientos históricos</label>
+                        <div class="input-wrapper">
+                            <span class="moneda"><i class="fas fa-search-dollar" style="font-size: 0.8rem;"></i></span>
+                            <select name="cedear" style="padding-left: 40px; cursor: pointer;">
+                                <option value="">-- Sin CEDEAR (Solo Tasa Fija) --</option>
+                                <option value="AAPL" {% if nombre_cedear == 'AAPL' %}selected{% endif %}>Apple (AAPL)</option>
+                                <option value="MSFT" {% if nombre_cedear == 'MSFT' %}selected{% endif %}>Microsoft (MSFT)</option>
+                                <option value="KO" {% if nombre_cedear == 'KO' %}selected{% endif %}>Coca-Cola (KO)</option>
+                                <option value="JNJ" {% if nombre_cedear == 'JNJ' %}selected{% endif %}>Johnson & Johnson (JNJ)</option>
+                                <option value="META" {% if nombre_cedear == 'META' %}selected{% endif %}>Meta (META)</option>
+                                <option value="SPY" {% if nombre_cedear == 'SPY' %}selected{% endif %}>S&P 500 (SPY)</option>
+                                <option value="QQQ" {% if nombre_cedear == 'QQQ' %}selected{% endif %}>Nasdaq 100 (QQQ)</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="action-buttons">
-                    <input type="submit" value="Calcular">
-                    <a href="/simulator" class="btn-reset">Restablecer</a>
+                <div class="action-buttons" style="display: flex; gap: 10px; margin-top: 1rem;">
+                    <button type="submit" name="accion" value="calcular" class="btn-hero-primary" style="flex: 3; padding: 0.6rem; font-size: 0.95rem; border: none; cursor: pointer;">
+                        <i class="fas fa-calculator"></i> Calcular
+                    </button>
+                    <a href="{{ url_for('fic.fic_simulador') }}" class="btn-reset" style="flex: 1; padding: 0.6rem;">
+                        <i class="fas fa-undo"></i>
+                    </a>
                 </div>
             </form>
 
             {% if total %}
-            <div class="resultado-interno">
-                <div class="tarjeta-resultado fic-result">
-                    <p>Tu FIC Proyectado</p>
-                    <div class="monto-final">${{ "{:,.2f}".format(total) }}</div>
-                    <small>Tasa fija del {{ tasa }}%</small>
+                <div class="resultado-interno">
+                    <h3>Resultados de la Simulación</h3>
+                    
+                    <div class="tarjeta-resultado fic-result">
+                        <p>Total con Tasa Fija ({{ tasa }}%)</p>
+                        <h4 class="monto-final">${{ "{:,.2f}".format(total) }}</h4>
+                    </div>
+
+                    {% if total_cedear %}
+                        <div class="tarjeta-resultado cedear-result">
+                            <p>Total proyectado con {{ nombre_cedear }} ({{ tasa_cedear_real }}%)</p>
+                            <h4 class="monto-final cedear-color">${{ "{:,.2f}".format(total_cedear) }}</h4>
+                        </div>
+                    {% endif %}
+
+                    <div style="margin-top: 20px; background: rgba(15, 23, 42, 0.4); border-radius: 8px; padding: 10px; border: 1px solid #334155;">
+                        <canvas id="graficoCrecimiento" height="250"></canvas>
+                    </div>
+
+                    <small style="display:block; margin-top:15px; color:#64748b;">*Cálculo basado en interés compuesto</small>
+                    
+                    <form action="{{ url_for('fic.fic_simulador') }}" method="post" style="margin-top: 1.5rem; text-align: center;">
+                        <input type="hidden" name="capital_inicial" value="{{ cap_ini }}">
+                        <input type="hidden" name="aporte_mensual" value="{{ aporte }}">
+                        <input type="hidden" name="tasa_interes" value="{{ tasa }}">
+                        <input type="hidden" name="años" value="{{ años }}">
+                        <input type="hidden" name="cedear" value="{{ nombre_cedear }}">
+                        
+                        <button type="submit" name="accion" value="guardar" class="btn-hero-primary" style="background: #10b981; border: none; cursor: pointer; padding: 0.6rem 2rem; font-size: 0.95rem; border-radius: 8px;">
+                            <i class="fas fa-save"></i> Guardar esta Simulación
+                        </button>
+                    </form>
                 </div>
-                
-                {% if nombre_cedear %}
-                <div class="tarjeta-resultado cedear-result">
-                    <p>Proyección {{ nombre_cedear }}</p>
-                    <div class="monto-final cedear-color">${{ "{:,.2f}".format(total_cedear) }}</div>
-                    <small>Promedio Histórico (5 años): <strong>{{ tasa_cedear_real }}%</strong></small>
-                </div>
-                {% endif %}
 
-                <div style="position: relative; height:250px; width:100%; margin-top: 20px;">
-                    <canvas id="miGrafico"></canvas>
-                </div>
+                <script>
+                    const ctx = document.getElementById('graficoCrecimiento').getContext('2d');
+                    
+                    // Traemos los datos de Python (las listas de saldos mes a mes)
+                    const datosFijos = {{ grafico_fic | tojson }};
+                    const datosCedear = {{ grafico_cedear | tojson }};
+                    
+                    // Creamos etiquetas para los meses (Mes 1, Mes 2, etc)
+                    const etiquetasMeses = Array.from({length: datosFijos.length}, (_, i) => `Mes ${i + 1}`);
 
-                <small style="display:block; margin-top:10px;">*Cálculo basado en interés compuesto</small>
-            </div>
-
-            <script>
-                const ctx = document.getElementById('miGrafico').getContext('2d');
-                
-                const datosFic = {{ grafico_fic | tojson }};
-                const datosCedear = {{ grafico_cedear | default([]) | tojson }};
-                const meses = Array.from({length: datosFic.length}, (_, i) => i + 1);
-
-                const datasets = [
-                    {
-                        label: 'Tu FIC',
-                        data: datosFic,
+                    // Configuramos la línea de la tasa fija
+                    const datasetsGrafico = [{
+                        label: 'Estrategia Tasa Fija',
+                        data: datosFijos,
                         borderColor: '#38bdf8',
                         backgroundColor: 'rgba(56, 189, 248, 0.1)',
                         borderWidth: 2,
-                        tension: 0.4,
-                        fill: true
-                    }
-                ];
-
-                if (datosCedear.length > 0) {
-                    datasets.push({
-                        label: 'CEDEAR {{ nombre_cedear }}',
-                        data: datosCedear,
-                        borderColor: '#f87171',
-                        borderDash: [5, 5],
-                        borderWidth: 2,
+                        fill: true,
                         tension: 0.4,
                         pointRadius: 0
-                    });
-                }
+                    }];
 
-                new Chart(ctx, {
-                    type: 'line',
-                    data: { labels: meses, datasets: datasets },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { labels: { color: '#cbd5e1' } } },
-                        scales: {
-                            x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
-                            y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
-                        }
+                    // Si el usuario eligió un CEDEAR, agregamos la segunda línea
+                    if (datosCedear && datosCedear.length > 0) {
+                        datasetsGrafico.push({
+                            label: 'Proyección {{ nombre_cedear }}',
+                            data: datosCedear,
+                            borderColor: '#f87171',
+                            backgroundColor: 'rgba(248, 113, 113, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 0
+                        });
                     }
-                });
-            </script>
+
+                    // Dibujamos el gráfico
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: etiquetasMeses,
+                            datasets: datasetsGrafico
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: { mode: 'index', intersect: false },
+                            plugins: {
+                                legend: { labels: { color: '#cbd5e1' } }
+                            },
+                            scales: {
+                                y: {
+                                    ticks: { color: '#94a3b8' },
+                                    grid: { color: 'rgba(51, 65, 85, 0.5)' }
+                                },
+                                x: {
+                                    ticks: { color: '#94a3b8', maxTicksLimit: window.innerWidth < 600 ? 5 : 10 },
+                                    grid: { color: 'rgba(51, 65, 85, 0.5)' }
+                                }
+                            }
+                        }
+                    });
+                </script>
             {% endif %}
         </div>
     </main>
@@ -192,5 +290,25 @@
             </div>
         </div>
     </footer>
+
+    <script>
+        const mobileMenu = document.getElementById('mobile-menu');
+        const navMenu = document.getElementById('nav-menu');
+
+        if (mobileMenu) {
+            mobileMenu.addEventListener('click', () => {
+                navMenu.classList.toggle('active');
+
+                const icon = mobileMenu.querySelector('i');
+                if (navMenu.classList.contains('active')) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                } else {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            });
+        }
+    </script>
 </body>
 </html>

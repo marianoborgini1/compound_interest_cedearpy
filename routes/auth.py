@@ -1,13 +1,17 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from models.table_user import db, User
 from pprint import pprint #permite mostrar datos complejos de forma facil de leer en consola
+# Herramientas para mandar correos y generar tokens seguros
+import smtplib
+from email.mime.text import MIMEText
+from itsdangerous import URLSafeTimedSerializer
 
 rout_auth = Blueprint('auth', __name__)
 
 @rout_auth.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
     
-    # si el userId no esta en la sesion vuelve a login, nadie puede entrar dashboard a menos que haya iniciado sesion o que tenga sus datos guardados en la memoria del navegador 
+    # Si el userId no esta en la sesion vuelve a login, nadie puede entrar dashboard a menos que haya iniciado sesion o que tenga sus datos guardados en la memoria del navegador 
     if 'userId' not in session:
         return redirect(url_for('auth.login'))
     
@@ -20,18 +24,19 @@ def login():
         email = request.form['email']
         password = request.form['password']
         
-        # 2. Buscamos en la tabla User si hay alguien con ese email
+        # Busca en la tabla User si hay alguien con ese email
         # El .first() es para que nos devuelva un objeto con atributos y no una lista
         userFound = User.query.filter_by(email=email).first()
         
         if userFound and userFound.password == password:
             
-            # si el usuario ingresa los datos correctamente, se le guarda el user y el id en la memoria del navegador para que dashboard entienda quien esta en la sesion
+            # Si el usuario ingresa los datos correctamente, se le guarda el user y el id en la memoria del navegador para que dashboard entienda quien esta en la sesion
             session['userId'] = userFound.id
             session['userName'] = userFound.user
             return redirect(url_for('auth.dashboard'))
         else:
-            return "ERROR. El email o la contraseña son incorrectos. Intenta nuevamente."
+            flash("ERROR. El email o la contraseña son incorrectos. Intenta nuevamente.", "error")
+            return redirect(url_for('auth.login'))
     else:
         return render_template('login.html')
 
@@ -43,7 +48,7 @@ def register():
         email = request.form["email"]
         password = request.form["password"]
         
-        #consulta en la db si el email ingresado existe 
+        # Consulta en la db si el email ingresado existe 
         userExist = User.query.filter_by(email=email).first()
         
         if userExist:
@@ -56,15 +61,83 @@ def register():
         
         pprint(request.form)
     
-        # se arma la sesión automáticamente al registrarse, manda id y user a la memoria de la web para saber quien esta en la sesion
+        # Se arma la sesión automáticamente al registrarse, manda id y user a la memoria de la web para saber quien esta en la sesion
         session['userId'] = newUser.id
         session['userName'] = newUser.user
         
-        #redirige a la pagina de inicia si todo es correcto
+        # Redirige a la pagina de inicia si todo es correcto
         return redirect(url_for('auth.dashboard'))
         
     else:
         return render_template('register.html')
+    
+generador_tokens = URLSafeTimedSerializer('forget_password_token_key_secret')
+@rout_auth.route('/forget-password', methods=['GET', 'POST'])
+def forget_password():
+    if request.method == 'POST':
+        email_ingresado = request.form['email']
+        
+        # Consulta si el email existe en la db
+        userFound = User.query.filter_by(email=email_ingresado).first()
+        
+        if userFound:
+            # Si usuario existe, fabrica Token único usando su email
+            # Salt = Etiqueta de nombre del token 
+            token = generador_tokens.dumps(email_ingresado, salt='recuperar-pass')
+            link_recuperacion = url_for('auth.reset_password', token=token, _external=True)
+            
+            email = "marianoborgini1@gmail.com" 
+            key_app = "agsddtrrfvbtrgel" 
+            
+            cuerpo_mensaje = f"Hola {userFound.user},\n\nPara restablecer tu contraseña, hacé click en el siguiente enlace. Este enlace caduca en 15 minutos por seguridad:\n\n{link_recuperacion}"
+            
+            mensaje = MIMEText(cuerpo_mensaje)
+            mensaje['Subject'] = 'FIC CedearPy - Recuperar Contraseña'
+            mensaje['From'] = email
+            mensaje['To'] = email_ingresado
+            
+            # Conexion a Gmail y envia correo (try/except por si falla internet)
+            try:
+                server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+                server.login(email, key_app)
+                server.send_message(mensaje)
+                server.quit()
+                print("Correo enviado con éxito")
+            except Exception as e:
+                print("Error mandando el correo:", e)
+                
+            flash('Si el email está registrado, te enviamos un enlace de recuperación.', 'success')
+            return redirect(url_for('auth.forget_password'))
+    else:
+        return render_template('forget_password.html')
+
+@rout_auth.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    # Desencripta token para sacar el email
+    try:
+        email_del_token = generador_tokens.loads(token, salt='recuperar-pass', max_age=900)
+    except:
+        # Si el token es viejo, trucho o alguien lo modificó, tira error y redirect.
+        flash('El enlace es inválido o ya expiró. Volvé a pedirlo.', 'error')
+        return redirect(url_for('auth.forget_password'))
+        
+    # Si el token es válido y el usuario manda el formulario con la nueva contraseña
+    if request.method == 'POST':
+        nueva_password = request.form['password']
+        
+        # Busca al usuario usando el email 
+        user = User.query.filter_by(email=email_del_token).first()
+        
+        if user:
+            # Reemplaza contraseña vieja por la nueva, se guarda en la DB
+            user.password = nueva_password
+            db.session.commit()
+            
+            flash('¡Excelente! Tu contraseña fue actualizada. Ya podés iniciar sesión.', 'success')
+            return redirect(url_for('auth.login'))
+            
+    else:
+        return render_template('reset_password.html')
 
 @rout_auth.route('/logout')
 def logout():

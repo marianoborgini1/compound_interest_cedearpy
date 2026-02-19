@@ -6,7 +6,6 @@ from models.table_simulacion import Simulacion
 from routes.auth import rout_auth
 from routes.fic import rout_fic
 
-
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'

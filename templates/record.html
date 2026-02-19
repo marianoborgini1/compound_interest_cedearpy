@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo_sin_txt.ico') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    
+    <title>Mis Simulaciones - CedearPy</title>
+</head>
+<body class="landing-body">
+    <header style="padding-top: 1rem;">
+        <div class="logo-container">
+            <a href="{{ url_for('fic.fic_simulador') }}"> 
+                <img id="logo-para-pdf" src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="app-logo">
+            </a>
+        </div>
+        
+        <div class="menu-toggle" id="mobile-menu">
+            <i class="fas fa-bars"></i>
+        </div>
+
+        <nav id="nav-menu">
+            <a href="#contacto" class="btn-contact-header"><i class="fas fa-envelope"></i> Contacto</a>
+            <a href="{{ url_for('fic.fic_simulador') }}" class="btn-contact-header">
+                <i class="fas fa-arrow-left"></i> Volver al Simulador
+            </a>
+        </nav>
+    </header>
+    
+    <main style="align-items: center; min-height: 80vh;">
+        <div class="dashboard-container" style="max-width: 800px; width: 100%;">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 15px;">
+                <div>
+                    <h2 style="margin: 0;"><i class="fas fa-history"></i> Historial de Simulaciones</h2>
+                    <p style="margin: 5px 0 0 0; color:#94a3b8;">Revisá y compará tus estrategias guardadas.</p>
+                </div>
+                
+                {% if simulaciones %}
+                <button onclick="descargarPDFReal()" style="background: rgba(56, 189, 248, 0.1); color: #38bdf8; border: 1px solid #38bdf8; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 1rem; transition: 0.3s; display: flex; align-items: center; gap: 8px; font-weight: bold;">
+                    <i class="fas fa-file-pdf"></i> Descargar PDF
+                </button>
+                {% endif %}
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert-animado" style="background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 12px; border-radius: 8px; text-align: center; margin-bottom: 20px; border: 1px solid #10b981;">
+                            <i class="fas fa-check-circle"></i> {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% if simulaciones %}
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    {% for sim in simulaciones %}
+                        <div class="historial-item" style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 8px; padding: 1.5rem;">
+                            
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; border-bottom: 1px solid #334155; padding-bottom: 10px;">
+                                <h3 style="margin: 0; color: #f8fafc; font-size: 1.1rem;">
+                                    {% if sim.activo_elegido != 'Personalizado' %}
+                                        <i class="fas fa-chart-line" style="color: #f87171;"></i> {{ sim.activo_elegido }} vs Tasa Fija
+                                    {% else %}
+                                        <i class="fas fa-piggy-bank" style="color: #38bdf8;"></i> Tasa Fija Personalizada
+                                    {% endif %}
+                                </h3>
+                                
+                                <div style="display: flex; gap: 10px;">
+                                    <form action="{{ url_for('fic.fic_simulador') }}" method="post">
+                                        <input type="hidden" name="capital_inicial" value="{{ sim.capital_inicial }}">
+                                        <input type="hidden" name="aporte_mensual" value="{{ sim.aporte_mensual }}">
+                                        <input type="hidden" name="tasa_interes" value="{{ sim.tasa_manual }}">
+                                        <input type="hidden" name="años" value="{{ sim.años }}">
+                                        {% if sim.activo_elegido != 'Personalizado' %}
+                                            <input type="hidden" name="cedear" value="{{ sim.activo_elegido }}">
+                                        {% endif %}
+                                        <button type="submit" name="accion" value="calcular" style="background: rgba(56, 189, 248, 0.1); color: #38bdf8; border: 1px solid #38bdf8; padding: 5px 10px; border-radius: 5px; cursor: pointer; transition: 0.2s;">
+                                            <i class="fas fa-eye"></i> Ver Gráfico
+                                        </button>
+                                    </form>
+
+                                    <form id="form-borrar-{{ sim.id }}" action="{{ url_for('fic.delete_simulacion', id=sim.id) }}" method="post">
+                                        <button type="button" onclick="abrirModalBorrado('form-borrar-{{ sim.id }}')" style="background: rgba(248, 113, 113, 0.1); color: #f87171; border: 1px solid #f87171; padding: 5px 10px; border-radius: 5px; cursor: pointer; transition: 0.2s;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; color: #cbd5e1; font-size: 0.9rem; margin-bottom: 15px;">
+                                <span><strong>Capital:</strong> ${{ "{:,.2f}".format(sim.capital_inicial) }}</span>
+                                <span><strong>Aporte:</strong> ${{ "{:,.2f}".format(sim.aporte_mensual) }}/mes</span>
+                                <span><strong>Plazo:</strong> {{ sim.años }} años</span>
+                            </div>
+
+                            <div style="display: flex; gap: 20px;">
+                                <div style="flex: 1; background: rgba(56, 189, 248, 0.05); border: 1px solid rgba(56, 189, 248, 0.3); padding: 10px; border-radius: 8px;">
+                                    <span style="display: block; color: #38bdf8; font-size: 0.8rem; text-transform: uppercase;">Tasa Fija ({{ sim.tasa_manual }}%)</span>
+                                    <strong style="font-size: 1.2rem; color: #f8fafc;">${{ "{:,.2f}".format(sim.total_fijo) }}</strong>
+                                </div>
+
+                                {% if sim.activo_elegido != 'Personalizado' %}
+                                <div style="flex: 1; background: rgba(248, 113, 113, 0.05); border: 1px solid rgba(248, 113, 113, 0.3); padding: 10px; border-radius: 8px;">
+                                    <span style="display: block; color: #f87171; font-size: 0.8rem; text-transform: uppercase;">CEDEAR ({{ sim.tasa_cedear | round(2) }}%)</span>
+                                    <strong style="font-size: 1.2rem; color: #f8fafc;">${{ "{:,.2f}".format(sim.total_cedear) }}</strong>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="historial-item" style="text-align: center; padding: 3rem; background: rgba(15, 23, 42, 0.4); border-radius: 8px; border: 1px dashed #475569;">
+                    <i class="fas fa-folder-open" style="font-size: 3rem; color: #475569; margin-bottom: 1rem;"></i>
+                    <p style="color: #94a3b8;">Todavía no guardaste ninguna simulación.</p>
+                </div>
+            {% endif %}
+
+        </div>
+    </main>
+
+    <div id="modalConfirmacion" class="modal-overlay">
+        <div class="modal-box">
+            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #ef4444; margin-bottom: 1rem;"></i>
+            <h3 style="color: #f8fafc; margin-bottom: 0.5rem;">¿Eliminar Simulación?</h3>
+            <p style="color: #94a3b8; margin-bottom: 1.5rem;">Esta acción no se puede deshacer y borrará los datos para siempre.</p>
+            <div style="display: flex; justify-content: center; gap: 15px;">
+                <button onclick="cerrarModal()" class="modal-btn-cancelar">Cancelar</button>
+                <button onclick="confirmarBorrado()" class="modal-btn-borrar"><i class="fas fa-trash"></i> Sí, eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let formularioActual = null;
+        function abrirModalBorrado(idFormulario) {
+            formularioActual = document.getElementById(idFormulario);
+            document.getElementById('modalConfirmacion').style.display = 'flex';
+        }
+        function cerrarModal() {
+            document.getElementById('modalConfirmacion').style.display = 'none';
+            formularioActual = null;
+        }
+        function confirmarBorrado() {
+            if (formularioActual) formularioActual.submit();
+        }
+
+        function descargarPDFReal() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const imgElement = document.getElementById('logo-para-pdf');
+            
+            // Truco de Canvas para evitar que jsPDF deforme la imagen
+            const canvas = document.createElement('canvas');
+            canvas.width = imgElement.naturalWidth;
+            canvas.height = imgElement.naturalHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(imgElement, 0, 0);
+            const imgData = canvas.toDataURL('image/png');
+            
+            const aspectRatio = canvas.width / canvas.height;
+            const targetHeight = 12;
+            const targetWidth = targetHeight * aspectRatio;
+
+            doc.addImage(imgData, 'PNG', 14, 10, targetWidth, targetHeight); 
+
+            doc.setFontSize(16);
+            doc.setTextColor(30, 41, 59); 
+            doc.text('Reporte de Simulaciones Financieras', 14, 32);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(100, 116, 139); 
+            const fechaHoy = new Date().toLocaleDateString('es-AR');
+            doc.text(`Usuario: {{ user }}  |  Fecha de reporte: ${fechaHoy}`, 14, 39);
+
+            const columnas = ["Estrategia", "Capital Inicial", "Aporte / Mes", "Plazo", "Tasa Fija", "Total Fijo", "Total CEDEAR"];
+            const filas = [
+                {% for sim in simulaciones %}
+                [
+                    "{{ sim.activo_elegido if sim.activo_elegido != 'Personalizado' else 'Tasa Fija' }}",
+                    "${{ '{:,.2f}'.format(sim.capital_inicial) }}",
+                    "${{ '{:,.2f}'.format(sim.aporte_mensual) }}",
+                    "{{ sim.años }} años",
+                    "{{ sim.tasa_manual }}%",
+                    "${{ '{:,.2f}'.format(sim.total_fijo) }}",
+                    "{{ '${:,.2f}'.format(sim.total_cedear) if sim.activo_elegido != 'Personalizado' else '-' }}"
+                ]{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ];
+
+            doc.autoTable({
+                startY: 45, 
+                head: [columnas],
+                body: filas,
+                theme: 'striped',
+                headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold' },
+                styles: { fontSize: 9, cellPadding: 4, valign: 'middle' },
+                alternateRowStyles: { fillColor: [241, 245, 249] }
+            });
+
+            doc.save('Reporte_Simulaciones_{{ user }}.pdf');
+        }
+    </script>
+
+    <footer id="contacto" style="margin-top: 50px;">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="https://www.linkedin.com/in/mariano-borgini-dev" target="_blank" class="social-btn linkedin"><i class="fab fa-linkedin"></i> LinkedIn</a>
+                <a href="https://github.com/marianoborgini1" target="_blank" class="social-btn github"><i class="fab fa-github"></i> GitHub</a>
+                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=marianoborgini1@gmail.com" target="_blank" class="social-btn gmail"><i class="fas fa-envelope"></i> Gmail</a>
+            </div>
+            <div class="footer-copy">
+                <p>Mariano Borgini <span class="code-tag">&lt;/&gt;</span> Software Developer</p>
+                <small>Todos los derechos reservados © 2026</small>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const mobileMenu = document.getElementById('mobile-menu');
+        const navMenu = document.getElementById('nav-menu');
+
+        if (mobileMenu) {
+            mobileMenu.addEventListener('click', () => {
+                navMenu.classList.toggle('active');
+                
+                // Cambia el icono de hamburguesa (bars) a cruz (times)
+                const icon = mobileMenu.querySelector('i');
+                if (navMenu.classList.contains('active')) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                } else {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

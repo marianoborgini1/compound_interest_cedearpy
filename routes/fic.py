@@ -1,7 +1,11 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from models.table_user import db, User
-from pprint import pprint #permite mostrar datos complejos de forma facil de leer en consola
+from models.table_simulacion import Simulacion
+from pprint import pprint #Permite mostrar datos complejos de forma facil de leer en consola
+#Libreria para obtener datos de los cedear
 import yfinance as yf
+
+
 rout_fic = Blueprint('fic', __name__)
 
 @rout_fic.route('/simulator', methods=['GET', 'POST'])
@@ -33,14 +37,14 @@ def fic_simulador():
             try:
                 accion = yf.Ticker(cedear_selec)
                 
-                # 5 años (period="5y") promedio
+                # toma periodo de 5 años (period="5y") promedio
                 historia = accion.history(period="5y")
                 
                 if not historia.empty:
                     precio_inicio = historia['Close'].iloc[0]
                     precio_fin = historia['Close'].iloc[-1]
                     
-                    #años exactos que pasaron 
+                    # Años exactos que pasaron 
                     dias_totales = (historia.index[-1] - historia.index[0]).days
                     años_reales = dias_totales / 365.25
                     
@@ -51,36 +55,60 @@ def fic_simulador():
                         
                         tasa_anual_cedear = cagr * 100
                         
-                        # Pasamos tasa anual promedio a mensual para el bucle
+                        # Pasamos tasa anual a promedio a mensual para el bucle
                         tasa_mensual_cedear = (tasa_anual_cedear / 100) / 12
             except:
                 tasa_anual_cedear = 0
                 tasa_mensual_cedear = 0
         
         
-        # se repite la cantidad total de meses de aporte que haga el usuario
+        # Se repite la cantidad total de meses de aporte que haga el usuario
         for x in range(total_meses):
-            #la ganancia se calcula con el saldo actual * la tasa mensual
+            # La ganancia se calcula con el saldo actual * la tasa mensual
             ganancia = saldo_actual * tasa_mensual
-            #sumamos la ganancia al saldo actual (el rendimiento del aporte)
+            # Sumamos la ganancia al saldo actual (el rendimiento del aporte)
             saldo_actual = saldo_actual + ganancia
-            #sumamos lo que aporta el usuario por mes
+            # Sumamos lo que aporta el usuario por mes
             saldo_actual = saldo_actual + aporte_mensual
-            #guardamos el saldo final de cada mes (ganancia + aporte)
+            # Guardamos el saldo final de cada mes (ganancia + aporte)
             aporte_list.append(saldo_actual)
             
-            #si elige cedear
+            # Si elige cedear
             if cedear_selec:
                 ganancia_cedear = saldo_cedear * tasa_mensual_cedear
                 saldo_cedear = saldo_cedear + ganancia_cedear
                 saldo_cedear = saldo_cedear + aporte_mensual
                 lista_cedear.append(saldo_cedear)
             
-        userName = session.get('userName') # Recuperamos nombre para no perderlo
+        # Nombre y ID guradados en navegador
+        userName = session.get('userName')
+        user_id = session.get('userId')
+        
+        # Guardar en db
+        accion = request.form.get('accion') 
+        
+        if accion == 'guardar':
+            # Nuevo registro en la tabla Simulacion (ahora con los totales)
+            nueva_simulacion = Simulacion(
+                id_user=user_id,
+                capital_inicial=capital_inicial,
+                aporte_mensual=aporte_mensual,
+                años=años,
+                activo_elegido=cedear_selec if cedear_selec else 'Personalizado',
+                tasa_manual=tasa_interes,
+                total_fijo=saldo_actual,
+                total_cedear=saldo_cedear if cedear_selec else 0,
+                tasa_cedear=tasa_anual_cedear if cedear_selec else 0
+            )
+            db.session.add(nueva_simulacion)
+            db.session.commit()
+            
+            flash('¡Simulación guardada en tu historial con éxito!', 'success')
+            
         return render_template('dashboard.html', 
             user=userName, 
             total=saldo_actual, 
-            #gráfico
+            # Gráfico
             grafico_fic=aporte_list,       
             grafico_cedear=lista_cedear,   
             # Datos para rellenar inputs
@@ -100,3 +128,34 @@ def fic_simulador():
         
         userName = session.get('userName')
         return render_template('dashboard.html', user=userName)
+
+@rout_fic.route('/mis-simulaciones')
+def mis_simulaciones():
+    if 'userId' not in session:
+        return redirect(url_for('auth.login'))
+        
+    user_id = session.get('userId')
+    userName = session.get('userName')
+    
+    # Buscam todas las simulaciones del usuario específico
+    # Orden por ID de mayor a menor 
+    simulaciones = Simulacion.query.filter_by(id_user=user_id).order_by(Simulacion.id.desc()).all()
+    
+    return render_template('record.html', user=userName, simulaciones=simulaciones)
+
+@rout_fic.route('/borrar-simulacion/<int:id>', methods=['POST'])
+def delete_simulacion(id):
+    # Verificamos que el usuario haya iniciado sesión
+    if 'userId' not in session:
+        return redirect(url_for('auth.login'))
+    
+    # Buscamos la simulación por ID
+    sim = Simulacion.query.get(id)
+    
+    # Seguridad: solo la borra si existe y si el id_user coincide con el usuario actual
+    if sim and sim.id_user == session['userId']:
+        db.session.delete(sim)
+        db.session.commit()
+        flash('Simulación eliminada correctamente.', 'success')
+        
+    return redirect(url_for('fic.mis_simulaciones'))

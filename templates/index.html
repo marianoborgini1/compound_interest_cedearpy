@@ -4,49 +4,96 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <title>FIC CedearPy - Inversiones Inteligentes</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo_sin_txt.ico') }}">
+    <title>FIC CedearPy</title>
 </head>
 <body class="landing-body">
-    
-    <header>
+    <div class="tradingview-widget-container" style="background: #0f172a; border-bottom: 1px solid #1e293b; width: 100%; overflow: hidden; display: block;">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+        {
+            "symbols": [
+                { "proName": "AMEX:SPY", "title": "S&P 500" },
+                { "proName": "NASDAQ:QQQ", "title": "Nasdaq 100" },
+                { "proName": "NASDAQ:MSFT", "title": "Microsoft" },
+                { "proName": "NASDAQ:AAPL", "title": "Apple" },
+                { "proName": "NASDAQ:NVDA", "title": "Nvidia" },
+                { "proName": "NASDAQ:AMZN", "title": "Amazon" },
+                { "proName": "NASDAQ:GOOGL", "title": "Google" },
+                { "proName": "NASDAQ:META", "title": "Meta" },
+                { "proName": "NASDAQ:TSLA", "title": "Tesla" },
+                { "proName": "NYSE:KO", "title": "Coca-Cola" },
+                { "proName": "NYSE:JNJ", "title": "Johnson & Johnson" }
+            ],
+            "showSymbolLogo": true,
+            "colorTheme": "dark",
+            "isTransparent": true,
+            "displayMode": "adaptive",
+            "locale": "es"
+        }
+        </script>
+    </div>
+
+    <header style="padding-top: 1rem;">
         <div class="logo-container">
-            <a href="{{ url_for('index') }}">
-                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="FIC CedearPy Logo" class="app-logo">
+            <a href="{{ url_for('index') }}"> 
+                <img id="logo-para-pdf" src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="app-logo">
             </a>
         </div>
-        <nav>
-            <a href="#contacto" class="btn-contact-header"><i class="fas fa-envelope"></i> Contacto</a>
-            </nav>
+        
+        <div class="menu-toggle" id="mobile-menu">
+            <i class="fas fa-bars"></i>
+        </div>
+
+        <nav id="nav-menu">
+            <a href="#caracteristicas" class="btn-contact-header">Beneficios</a>
+            <a href="{{ url_for('auth.login') }}" class="btn-login-header">Iniciar Sesión</a>
+            <a href="{{ url_for('auth.register') }}" class="btn-register-header">Registrarse</a>
+        </nav>
     </header>
 
-    <main class="hero-section">
-        <div class="hero-content">
-            <h2>Simulá, Proyectá y Ganale al Mercado</h2>
-            <p>
-                La herramienta definitiva para visualizar el poder del <strong>Interés Compuesto</strong> 
-                y comparar tus estrategias contra rendimientos reales de <strong>CEDEARs</strong>.
-            </p>
-            
-            <div class="hero-buttons">
-                <a href="{{ url_for('auth.register') }}" class="btn-hero-primary">Comenzar Ahora 🚀</a>
-                <a href="{{ url_for('auth.login') }}" class="btn-hero-secondary">Ya tengo cuenta</a>
+    <main class="fade-in" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70vh; text-align: center; padding: 2rem;">
+        
+        <h1 style="font-size: 3.5rem; color: #f8fafc; margin-bottom: 1rem; max-width: 800px; line-height: 1.2;">
+            Proyectá tu futuro financiero con <span style="color: #38bdf8;">precisión.</span>
+        </h1>
+        <p style="font-size: 1.2rem; color: #94a3b8; max-width: 600px; margin-bottom: 2.5rem;">
+            Calculá el poder del interés compuesto y compará el rendimiento histórico de los principales CEDEARs del mercado contra tasas fijas tradicionales.
+        </p>
+
+        <div style="display: flex; gap: 15px;">
+            <a href="{{ url_for('auth.register') }}" class="btn-hero-primary" style="font-size: 1.1rem; padding: 0.8rem 2rem;">
+                Comenzar a Simular <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
+            </a>
+        </div>
+
+        <div id="caracteristicas" class="features-grid" style="max-width: 1000px; width: 100%;">
+            <div class="feature-card">
+                <i class="fas fa-chart-line feature-icon"></i>
+                <h3 style="color: #f8fafc; margin-bottom: 10px;">Rendimiento Real</h3>
+                <p style="color: #94a3b8; font-size: 0.95rem;">Conectado a la bolsa para comparar tus proyecciones contra históricos reales de Microsoft, Meta, Johnson & Johnson y más.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-file-pdf feature-icon" style="color: #10b981;"></i>
+                <h3 style="color: #f8fafc; margin-bottom: 10px;">Reportes Profesionales</h3>
+                <p style="color: #94a3b8; font-size: 0.95rem;">Guardá tu historial en la base de datos y exportá todos tus cálculos en un documento PDF detallado y limpio.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-shield-alt feature-icon" style="color: #f87171;"></i>
+                <h3 style="color: #f8fafc; margin-bottom: 10px;">Seguro y Privado</h3>
+                <p style="color: #94a3b8; font-size: 0.95rem;">Sistema de autenticación propio, contraseñas encriptadas y recuperación segura mediante token por correo electrónico.</p>
             </div>
         </div>
+
     </main>
 
-    <footer id="contacto">
+    <footer id="contacto" style="margin-top: 50px;">
         <div class="footer-content">
             <div class="footer-links">
-                <a href="https://www.linkedin.com/in/mariano-borgini-dev" target="_blank" class="social-btn linkedin">
-                    <i class="fab fa-linkedin"></i> LinkedIn
-                </a>
-                <a href="https://github.com/marianoborgini1" target="_blank" class="social-btn github">
-                    <i class="fab fa-github"></i> GitHub
-                </a>
-                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=marianoborgini1@gmail.com" target="_blank" class="social-btn gmail">
-                    <i class="fas fa-envelope"></i> Gmail
-                </a>
+                <a href="https://www.linkedin.com/in/mariano-borgini-dev" target="_blank" class="social-btn linkedin"><i class="fab fa-linkedin"></i> LinkedIn</a>
+                <a href="https://github.com/marianoborgini1" target="_blank" class="social-btn github"><i class="fab fa-github"></i> GitHub</a>
+                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=marianoborgini1@gmail.com" target="_blank" class="social-btn gmail"><i class="fas fa-envelope"></i> Gmail</a>
             </div>
             <div class="footer-copy">
                 <p>Mariano Borgini <span class="code-tag">&lt;/&gt;</span> Software Developer</p>
@@ -55,5 +102,24 @@
         </div>
     </footer>
 
+    <script>
+        const mobileMenu = document.getElementById('mobile-menu');
+        const navMenu = document.getElementById('nav-menu');
+
+        if (mobileMenu) {
+            mobileMenu.addEventListener('click', () => {
+                navMenu.classList.toggle('active');
+                
+                const icon = mobileMenu.querySelector('i');
+                if (navMenu.classList.contains('active')) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                } else {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            });
+        }
+    </script>
 </body>
 </html>

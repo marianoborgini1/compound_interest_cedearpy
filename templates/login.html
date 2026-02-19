@@ -5,26 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css">
-    <title>Iniciar Sesión</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo_sin_txt.ico') }}">
+    <title>Iniciar Sesión - CedearPy</title>
 </head>
 <body class="landing-body"> 
 
-    <header>
+    <header style="padding-top: 1rem;">
         <div class="logo-container">
-            <a href="{{ url_for('index') }}">
-                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="FIC CedearPy Logo" class="app-logo">
+            <a href="{{ url_for('fic.fic_simulador') }}"> 
+                <img id="logo-para-pdf" src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="app-logo">
             </a>
         </div>
-        <nav>
+        
+        <div class="menu-toggle" id="mobile-menu">
+            <i class="fas fa-bars"></i>
+        </div>
+
+        <nav id="nav-menu">
             <a href="#contacto" class="btn-contact-header"><i class="fas fa-envelope"></i> Contacto</a>
             <a href="{{ url_for('auth.register') }}" class="btn-register-header"><i class="fas fa-user-plus"></i> Registrarse</a>
-            </nav>
+        </nav>
     </header>
-
-
     
     <main>
         <div class="auth-card">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div style="background: rgba(248, 113, 113, 0.2); color: #f87171; padding: 10px; border-radius: 5px; text-align: center; margin-bottom: 15px; border: 1px solid #f87171;">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
             <h2>Iniciar Sesión</h2>
             <form action="{{ url_for('auth.login') }}" method="post">
                 <div class="input-group">
@@ -49,6 +62,8 @@
                 </div>
             </form>
             <div class="auth-footer">
+                <a href="{{ url_for('auth.forget_password') }}">¿Olvidaste tu contraseña?</a>
+                <br><br>
                 ¿No tenés cuenta? <a href="{{ url_for('auth.register') }}">Registrate acá</a>
             </div>
         </div>
@@ -83,6 +98,27 @@
             password.setAttribute('type', type);
             this.classList.toggle('fa-eye-slash');
         });
+    </script>
+
+    <script>
+        const mobileMenu = document.getElementById('mobile-menu');
+        const navMenu = document.getElementById('nav-menu');
+
+        if (mobileMenu) {
+            mobileMenu.addEventListener('click', () => {
+                navMenu.classList.toggle('active');
+                
+                // Cambia el icono de hamburguesa (bars) a cruz (times)
+                const icon = mobileMenu.querySelector('i');
+                if (navMenu.classList.contains('active')) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                } else {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            });
+        }
     </script>
 </body>
 </html>
