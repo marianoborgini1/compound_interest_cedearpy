@@ -1,8 +1,15 @@
+import os
+from dotenv import load_dotenv
+
+# IMPORTANTE: Cargar las variables ANTES de importar otras cosas
+load_dotenv()
+
 from flask import Flask, session, url_for, render_template, redirect
 from models.database import db  
 from models.table_user import User
 from models.table_simulacion import Simulacion
-#importacion de rutas
+
+# Importacion de rutas
 from routes.auth import rout_auth
 from routes.fic import rout_fic
 
@@ -11,16 +18,17 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-app.secret_key = "key_security_pass_dashboard"
+# Llama a la clave desde el .env 
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'default_key_flask')
 
-#conexion inicializamos y le decimos a la db que esta es nuestra app 
+# Conexion inicializamos y le decimos a la db que esta es nuestra app 
 db.init_app(app)
 
-#creamos tabla si no existe el archivo db
+# Creamos tabla si no existe el archivo db
 with app.app_context():
     db.create_all()
 
-#registro de rutas 
+# Registro de rutas 
 app.register_blueprint(rout_auth)
 app.register_blueprint(rout_fic)
 

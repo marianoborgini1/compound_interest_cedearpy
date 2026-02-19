@@ -1,3 +1,4 @@
+import os
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from models.table_user import db, User
 from pprint import pprint #permite mostrar datos complejos de forma facil de leer en consola
@@ -7,6 +8,9 @@ from email.mime.text import MIMEText
 from itsdangerous import URLSafeTimedSerializer
 
 rout_auth = Blueprint('auth', __name__)
+
+token_secret = os.environ.get('TOKEN_SECRET_KEY', 'clave_por_defecto_tokens')
+generador_tokens = URLSafeTimedSerializer(token_secret)
 
 @rout_auth.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
@@ -71,7 +75,6 @@ def register():
     else:
         return render_template('register.html')
     
-generador_tokens = URLSafeTimedSerializer('forget_password_token_key_secret')
 @rout_auth.route('/forget-password', methods=['GET', 'POST'])
 def forget_password():
     if request.method == 'POST':
@@ -86,8 +89,8 @@ def forget_password():
             token = generador_tokens.dumps(email_ingresado, salt='recuperar-pass')
             link_recuperacion = url_for('auth.reset_password', token=token, _external=True)
             
-            email = "marianoborgini1@gmail.com" 
-            key_app = "agsddtrrfvbtrgel" 
+            email = os.environ.get('MAIL_USER')
+            key_app = os.environ.get('MAIL_PASS')
             
             cuerpo_mensaje = f"Hola {userFound.user},\n\nPara restablecer tu contraseña, hacé click en el siguiente enlace. Este enlace caduca en 15 minutos por seguridad:\n\n{link_recuperacion}"
             
