@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>FIC CedearPy - Inversiones Inteligentes</title>
+</head>
+<body class="landing-body">
+    
+    <header>
+        <div class="logo-container">
+            <a href="{{ url_for('index') }}">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="FIC CedearPy Logo" class="app-logo">
+            </a>
+        </div>
+        <nav>
+            <a href="#contacto" class="btn-contact-header"><i class="fas fa-envelope"></i> Contacto</a>
+            </nav>
+    </header>
+
+    <main class="hero-section">
+        <div class="hero-content">
+            <h2>Simulá, Proyectá y Ganale al Mercado</h2>
+            <p>
+                La herramienta definitiva para visualizar el poder del <strong>Interés Compuesto</strong> 
+                y comparar tus estrategias contra rendimientos reales de <strong>CEDEARs</strong>.
+            </p>
+            
+            <div class="hero-buttons">
+                <a href="{{ url_for('auth.register') }}" class="btn-hero-primary">Comenzar Ahora 🚀</a>
+                <a href="{{ url_for('auth.login') }}" class="btn-hero-secondary">Ya tengo cuenta</a>
+            </div>
+        </div>
+    </main>
+
+    <footer id="contacto">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="https://www.linkedin.com/in/mariano-borgini-dev" target="_blank" class="social-btn linkedin">
+                    <i class="fab fa-linkedin"></i> LinkedIn
+                </a>
+                <a href="https://github.com/marianoborgini1" target="_blank" class="social-btn github">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=marianoborgini1@gmail.com" target="_blank" class="social-btn gmail">
+                    <i class="fas fa-envelope"></i> Gmail
+                </a>
+            </div>
+            <div class="footer-copy">
+                <p>Mariano Borgini <span class="code-tag">&lt;/&gt;</span> Software Developer</p>
+                <small>Todos los derechos reservados © 2026</small>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

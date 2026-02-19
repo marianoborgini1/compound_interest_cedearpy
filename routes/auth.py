@@ -6,6 +6,8 @@ rout_auth = Blueprint('auth', __name__)
 
 @rout_auth.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
+    
+    # si el userId no esta en la sesion vuelve a login, nadie puede entrar dashboard a menos que haya iniciado sesion o que tenga sus datos guardados en la memoria del navegador 
     if 'userId' not in session:
         return redirect(url_for('auth.login'))
     
@@ -24,6 +26,7 @@ def login():
         
         if userFound and userFound.password == password:
             
+            # si el usuario ingresa los datos correctamente, se le guarda el user y el id en la memoria del navegador para que dashboard entienda quien esta en la sesion
             session['userId'] = userFound.id
             session['userName'] = userFound.user
             return redirect(url_for('auth.dashboard'))
@@ -32,8 +35,8 @@ def login():
     else:
         return render_template('login.html')
 
-@rout_auth.route('/registro', methods= ['GET', 'POST'])
-def registro():
+@rout_auth.route('/register', methods= ['GET', 'POST'])
+def register():
     if request.method == 'POST':
         
         user = request.form["user"]
@@ -52,14 +55,19 @@ def registro():
         db.session.commit()
         
         pprint(request.form)
+    
+        # se arma la sesión automáticamente al registrarse, manda id y user a la memoria de la web para saber quien esta en la sesion
+        session['userId'] = newUser.id
+        session['userName'] = newUser.user
+        
         #redirige a la pagina de inicia si todo es correcto
-        #return redirect(url_for('dashboard.html'))
-        return "¡Usuario guardado con éxito en la base de datos!"
+        return redirect(url_for('auth.dashboard'))
         
     else:
-        return render_template('registro.html')
+        return render_template('register.html')
 
 @rout_auth.route('/logout')
 def logout():
+    # si el usuario oprime [cerrar sesion] vuelve a login
     session.clear()
     return redirect(url_for('auth.login'))
