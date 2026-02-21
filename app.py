@@ -16,7 +16,12 @@ from routes.fic import rout_fic
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://neondb_owner:npg_hfBmou6nZe1v@ep-shy-mud-aiz2uulg-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require'
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    "pool_pre_ping": True,
+    "pool_recycle": 300,
+}
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 
 # Llama a la clave desde el .env 
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'default_key_flask')
