@@ -43,13 +43,13 @@ def fic_simulador():
                     proxy = "http://proxy.server:3128"
                     sesion_proxy = requests.Session()
                     sesion_proxy.proxies = {'http': proxy, 'https': proxy}
-                    accion = yf.Ticker(cedear_selec, session=sesion_proxy)
+                    accion_yf = yf.Ticker(cedear_selec, session=sesion_proxy)
                 else:
                     # Estamos en tu PC local: funcionamos normal sin proxy
-                    accion = yf.Ticker(cedear_selec)
+                    accion_yf = yf.Ticker(cedear_selec)
                 
                 # toma periodo de 5 años (period="5y") promedio
-                historia = accion.history(period="5y")
+                historia = accion_yf.history(period="5y")
                 
                 if not historia.empty:
                     precio_inicio = historia['Close'].iloc[0]
@@ -96,17 +96,17 @@ def fic_simulador():
         accion = request.form.get('accion') 
         
         if accion == 'guardar':
-            # Nuevo registro en la tabla Simulacion (ahora con los totales)
+            # Nuevo registro en la tabla Simulacion (ahora con los totales forzados a float de Python)
             nueva_simulacion = Simulacion(
                 id_user=user_id,
-                capital_inicial=capital_inicial,
-                aporte_mensual=aporte_mensual,
-                años=años,
+                capital_inicial=float(capital_inicial),
+                aporte_mensual=float(aporte_mensual),
+                años=int(años),
                 activo_elegido=cedear_selec if cedear_selec else 'Personalizado',
-                tasa_manual=tasa_interes,
-                total_fijo=saldo_actual,
-                total_cedear=saldo_cedear if cedear_selec else 0,
-                tasa_cedear=tasa_anual_cedear if cedear_selec else 0
+                tasa_manual=float(tasa_interes),
+                total_fijo=float(saldo_actual),
+                total_cedear=float(saldo_cedear) if cedear_selec else 0.0,
+                tasa_cedear=float(tasa_anual_cedear) if cedear_selec else 0.0
             )
             db.session.add(nueva_simulacion)
             db.session.commit()
