@@ -56,7 +56,8 @@ def register():
         userExist = User.query.filter_by(email=email).first()
         
         if userExist:
-            return "El email ingresado ya esta registrado. Ingrese otro email o inicie sesion."
+            flash("ERROR. El email ya esta registrado. Intenta nuevamente.", "error")
+            return redirect(url_for('auth.register'))
         
         newUser = User(user=user, email=email, password=password)
         

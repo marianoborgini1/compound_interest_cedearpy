@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 
-# IMPORTANTE: Cargar las variables ANTES de importar otras cosas
+# Carga las variables ANTES de importar otras cosas
 load_dotenv()
 
 from flask import Flask, session, url_for, render_template, redirect

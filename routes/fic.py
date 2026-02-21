@@ -3,7 +3,9 @@ from models.table_user import db, User
 from models.table_simulacion import Simulacion
 from pprint import pprint #Permite mostrar datos complejos de forma facil de leer en consola
 #Libreria para obtener datos de los cedear
+import os
 import yfinance as yf
+import requests # Agregado para configurar el proxy en PythonAnywhere
 
 
 rout_fic = Blueprint('fic', __name__)
@@ -35,7 +37,16 @@ def fic_simulador():
         # Si usuario eligió un CEDEAR
         if cedear_selec:
             try:
-                accion = yf.Ticker(cedear_selec)
+                # Detectamos automáticamente si estamos en la compu o en PythonAnywhere
+                if 'PYTHONANYWHERE_DOMAIN' in os.environ:
+                    # Estamos en la nube: usamos el proxy
+                    proxy = "http://proxy.server:3128"
+                    sesion_proxy = requests.Session()
+                    sesion_proxy.proxies = {'http': proxy, 'https': proxy}
+                    accion = yf.Ticker(cedear_selec, session=sesion_proxy)
+                else:
+                    # Estamos en tu PC local: funcionamos normal sin proxy
+                    accion = yf.Ticker(cedear_selec)
                 
                 # toma periodo de 5 años (period="5y") promedio
                 historia = accion.history(period="5y")
@@ -50,9 +61,7 @@ def fic_simulador():
                     
                     if años_reales > 0:
                         # FÓRMULA CAGR (Tasa de Crecimiento Anual Compuesto)
-                        # promedio real de crecimiento anual
                         cagr = ((precio_fin / precio_inicio) ** (1 / años_reales)) - 1
-                        
                         tasa_anual_cedear = cagr * 100
                         
                         # Pasamos tasa anual a promedio a mensual para el bucle
@@ -60,7 +69,6 @@ def fic_simulador():
             except:
                 tasa_anual_cedear = 0
                 tasa_mensual_cedear = 0
-        
         
         # Se repite la cantidad total de meses de aporte que haga el usuario
         for x in range(total_meses):
