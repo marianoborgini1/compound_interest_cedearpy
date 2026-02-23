@@ -15,14 +15,19 @@ Una aplicación web Full-Stack diseñada para proyectar el crecimiento del capit
 
 - **Backend:** Python, Flask, Flask-SQLAlchemy.
 - **Frontend:** HTML5, CSS3, JavaScript (Vanilla), Chart.js.
-- **Base de Datos:** SQLite.
-- **Librerías Extra:** `yfinance` (Datos de mercado), `python-dotenv` (Variables de entorno), `itsdangerous` (Tokens de seguridad).
+- **Base de Datos:** PostgreSQL alojada en Neon Serverless.
+- **Despliegue:** Vercel.
+- **Librerías Extra:** `yfinance` (Datos de mercado), `python-dotenv` (Variables de entorno), `itsdangerous` (Tokens de seguridad), `psycopg2-binary` (Driver de PostgreSQL).
 
 ## 🗄️ Arquitectura de la Base de Datos
 
-El sistema utiliza una base de datos relacional con dos tablas principales (`User` y `Simulacion`) vinculadas mediante una clave foránea (One-to-Many).
+El sistema utiliza una base de datos relacional 
+El núcleo de **CedearPy** está soportado por una base de datos relacional (PostgreSQL) diseñada para garantizar la integridad de la información y la persistencia de las simulaciones financieras. Contiene dos tablas principales (`User` y `Simulacion`) vinculadas mediante una clave foránea (One-to-Many).
 
 ![Diagrama de Base de Datos](static/diagrama_entidad_relacion/cedearpy_diagrama_der.drawio.png)
+
+* **Modelo Relacional (1:N):** La arquitectura utiliza una relación de "Uno a Muchos" entre las entidades `User` y `Simulacion`. Se implementó una llave foránea (`FK id_user`) con restricciones estrictas (`NOT NULL`) para asegurar que cada proyección pertenezca unívocamente a un usuario validado.
+* **Tolerancia a Fallos (Nullable Fields):** Los campos críticos para la fórmula de Interés Compuesto (capital, aportes, plazo, tasa manual) poseen restricciones `NOT NULL` a nivel de base de datos. En contraste, los campos de proyección de mercado (`tasa_cedear`, `total_cedear`) permiten valores `NULL`, garantizando que la aplicación pueda guardar simulaciones de tasa fija incluso ante eventuales caídas de la API externa de Yahoo Finance.
 
 ## ⚙️ Instalación y Ejecución Local
 
