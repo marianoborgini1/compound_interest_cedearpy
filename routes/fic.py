@@ -95,11 +95,15 @@ def fic_simulador():
         accion = request.form.get('accion') 
         
         if accion == 'guardar':
+            if not user_id:
+                flash('Tu sesión expiró, por favor volvé a iniciar sesión.', 'error')
+                return redirect(url_for('auth.login'))
+
             # Nuevo registro en la tabla Simulacion (ahora con los totales forzados a float de Python)
             nueva_simulacion = Simulacion(
                 id_user=user_id,
-                capital_inicial=float(capital_inicial),
-                aporte_mensual=float(aporte_mensual),
+                capital_inicial=int(capital_inicial),
+                aporte_mensual=int(aporte_mensual),
                 anios=int(anios),
                 activo_elegido=cedear_selec if cedear_selec else 'Personalizado',
                 tasa_manual=float(tasa_interes),
