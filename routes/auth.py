@@ -36,7 +36,7 @@ def login():
             
             # Si el usuario ingresa los datos correctamente, se le guarda el user y el id en la memoria del navegador para que dashboard entienda quien esta en la sesion
             session['userId'] = userFound.id
-            session['userName'] = userFound.user
+            session['userName'] = userFound.username 
             return redirect(url_for('auth.dashboard'))
         else:
             flash("ERROR. El email o la contraseña son incorrectos. Intenta nuevamente.", "error")
@@ -48,7 +48,7 @@ def login():
 def register():
     if request.method == 'POST':
         
-        user = request.form["user"]
+        username = request.form["username"]
         email = request.form["email"]
         password = request.form["password"]
         
@@ -59,7 +59,7 @@ def register():
             flash("ERROR. El email ya esta registrado. Intenta nuevamente.", "error")
             return redirect(url_for('auth.register'))
         
-        newUser = User(user=user, email=email, password=password)
+        newUser = User(username=username, email=email, password=password)
         
         db.session.add(newUser)
         db.session.commit()
@@ -68,7 +68,7 @@ def register():
     
         # Se arma la sesión automáticamente al registrarse, manda id y user a la memoria de la web para saber quien esta en la sesion
         session['userId'] = newUser.id
-        session['userName'] = newUser.user
+        session['userName'] = newUser.username
         
         # Redirige a la pagina de inicia si todo es correcto
         return redirect(url_for('auth.dashboard'))
@@ -93,7 +93,7 @@ def forget_password():
             email = os.environ.get('MAIL_USER')
             key_app = os.environ.get('MAIL_PASS')
             
-            cuerpo_mensaje = f"Hola {userFound.user},\n\nPara restablecer tu contraseña, hacé click en el siguiente enlace. Este enlace caduca en 15 minutos por seguridad:\n\n{link_recuperacion}"
+            cuerpo_mensaje = f"Hola {userFound.username},\n\nPara restablecer tu contraseña, hacé click en el siguiente enlace. Este enlace caduca en 15 minutos por seguridad:\n\n{link_recuperacion}"
             
             mensaje = MIMEText(cuerpo_mensaje)
             mensaje['Subject'] = 'FIC CedearPy - Recuperar Contraseña'
@@ -110,8 +110,8 @@ def forget_password():
             except Exception as e:
                 print("Error mandando el correo:", e)
                 
-            flash('Si el email está registrado, te enviamos un enlace de recuperación.', 'success')
-            return redirect(url_for('auth.forget_password'))
+        flash('Si el email está registrado, te enviamos un enlace de recuperación.', 'success')
+        return redirect(url_for('auth.forget_password'))
     else:
         return render_template('forget_password.html')
 
@@ -139,6 +139,9 @@ def reset_password(token):
             
             flash('¡Excelente! Tu contraseña fue actualizada. Ya podés iniciar sesión.', 'success')
             return redirect(url_for('auth.login'))
+        
+        flash('Usuario no encontrado.', 'error')
+        return redirect(url_for('auth.forget_password'))
             
     else:
         return render_template('reset_password.html')
