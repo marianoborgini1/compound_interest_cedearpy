@@ -28,16 +28,21 @@
     </header>
     
     <main>
-        <div class="auth-card">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div style="background: rgba(248, 113, 113, 0.2); color: #f87171; padding: 10px; border-radius: 5px; text-align: center; margin-bottom: 15px; border: 1px solid #f87171;">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                {% if category == 'error' %}
+                    <div style="background: rgba(239, 68, 68, 0.2); color: #ef4444; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 15px; border: 1px solid #ef4444;">
+                        <i class="fas fa-exclamation-circle"></i> {{ message }}
+                    </div>
+                {% elif category == 'success' %}
+                    <div style="background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 15px; border: 1px solid #10b981;">
+                        <i class="fas fa-check-circle"></i> {{ message }}
+                    </div>
                 {% endif %}
-            {% endwith %}
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
             <h2>Iniciar Sesión</h2>
             <form action="{{ url_for('auth.login') }}" method="post">
                 <div class="input-group">
