@@ -179,7 +179,7 @@
             doc.setFontSize(10);
             doc.setTextColor(100, 116, 139); 
             const fechaHoy = new Date().toLocaleDateString('es-AR');
-            doc.text(`Usuario: {{ username }}  |  Fecha de reporte: ${fechaHoy}`, 14, 39);
+            doc.text(`Usuario: {{ user }}  |  Fecha de reporte: ${fechaHoy}`, 14, 39);
 
             const columnas = ["Estrategia", "Capital Inicial", "Aporte / Mes", "Plazo", "Tasa Fija", "Total Fijo", "Total CEDEAR"];
             const filas = [
