@@ -22,7 +22,7 @@ Una aplicación web Full-Stack diseñada para proyectar el crecimiento del capit
 
 El sistema utiliza una base de datos relacional con dos tablas principales (`User` y `Simulacion`) vinculadas mediante una clave foránea (One-to-Many).
 
-![Diagrama de Base de Datos](static/img/diagrama_db.png.png)
+![Diagrama de Base de Datos](static/diagrama_entidad_relacion/cedearpy_diagrama_der.drawio.png)
 
 ## ⚙️ Instalación y Ejecución Local
 
