@@ -7,7 +7,6 @@ import os
 import yfinance as yf
 import requests # Agregado para configurar el proxy en PythonAnywhere
 
-
 rout_fic = Blueprint('fic', __name__)
 
 @rout_fic.route('/simulator', methods=['GET', 'POST'])
@@ -16,11 +15,11 @@ def fic_simulador():
         capital_inicial = float(request.form['capital_inicial'])
         aporte_mensual = float(request.form['aporte_mensual'])
         tasa_interes = float(request.form['tasa_interes'])
-        años = int(request.form['años'])
+        anios = int(request.form['anios'])
         cedear_selec = request.form.get('cedear')
         
         # total de meses de aporte para que simule el bucle mes a mes
-        total_meses = años * 12
+        total_meses = anios * 12
         # convertimos la tasa anual en una tasa mensual para calcular cuanto rinde cada aporte
         tasa_mensual = (tasa_interes / 100) / 12
         # el saldo actual del usuario va a ser el capital con el que inicia 
@@ -57,11 +56,11 @@ def fic_simulador():
                     
                     # Años exactos que pasaron 
                     dias_totales = (historia.index[-1] - historia.index[0]).days
-                    años_reales = dias_totales / 365.25
+                    anios_reales = dias_totales / 365.25
                     
-                    if años_reales > 0:
+                    if anios_reales > 0:
                         # FÓRMULA CAGR (Tasa de Crecimiento Anual Compuesto)
-                        cagr = ((precio_fin / precio_inicio) ** (1 / años_reales)) - 1
+                        cagr = ((precio_fin / precio_inicio) ** (1 / anios_reales)) - 1
                         tasa_anual_cedear = cagr * 100
                         
                         # Pasamos tasa anual a promedio a mensual para el bucle
@@ -101,7 +100,7 @@ def fic_simulador():
                 id_user=user_id,
                 capital_inicial=float(capital_inicial),
                 aporte_mensual=float(aporte_mensual),
-                años=int(años),
+                anios=int(anios),
                 activo_elegido=cedear_selec if cedear_selec else 'Personalizado',
                 tasa_manual=float(tasa_interes),
                 total_fijo=float(saldo_actual),
@@ -123,7 +122,7 @@ def fic_simulador():
             cap_ini=capital_inicial, 
             aporte=aporte_mensual, 
             tasa=tasa_interes,
-            años=años, 
+            anios=anios, 
             
             # Datos del CEDEAR
             nombre_cedear=cedear_selec,

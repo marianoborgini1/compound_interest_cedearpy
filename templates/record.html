@@ -76,7 +76,7 @@
                                         <input type="hidden" name="capital_inicial" value="{{ sim.capital_inicial }}">
                                         <input type="hidden" name="aporte_mensual" value="{{ sim.aporte_mensual }}">
                                         <input type="hidden" name="tasa_interes" value="{{ sim.tasa_manual }}">
-                                        <input type="hidden" name="años" value="{{ sim.años }}">
+                                        <input type="hidden" name="anios" value="{{ sim.anios }}">
                                         {% if sim.activo_elegido != 'Personalizado' %}
                                             <input type="hidden" name="cedear" value="{{ sim.activo_elegido }}">
                                         {% endif %}
@@ -96,7 +96,7 @@
                             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; color: #cbd5e1; font-size: 0.9rem; margin-bottom: 15px;">
                                 <span><strong>Capital:</strong> ${{ "{:,.2f}".format(sim.capital_inicial) }}</span>
                                 <span><strong>Aporte:</strong> ${{ "{:,.2f}".format(sim.aporte_mensual) }}/mes</span>
-                                <span><strong>Plazo:</strong> {{ sim.años }} años</span>
+                                <span><strong>Plazo:</strong> {{ sim.anios }} años</span>
                             </div>
 
                             <div style="display: flex; gap: 20px;">
@@ -179,7 +179,7 @@
             doc.setFontSize(10);
             doc.setTextColor(100, 116, 139); 
             const fechaHoy = new Date().toLocaleDateString('es-AR');
-            doc.text(`Usuario: {{ user }}  |  Fecha de reporte: ${fechaHoy}`, 14, 39);
+            doc.text(`Usuario: {{ username }}  |  Fecha de reporte: ${fechaHoy}`, 14, 39);
 
             const columnas = ["Estrategia", "Capital Inicial", "Aporte / Mes", "Plazo", "Tasa Fija", "Total Fijo", "Total CEDEAR"];
             const filas = [
@@ -188,7 +188,7 @@
                     "{{ sim.activo_elegido if sim.activo_elegido != 'Personalizado' else 'Tasa Fija' }}",
                     "${{ '{:,.2f}'.format(sim.capital_inicial) }}",
                     "${{ '{:,.2f}'.format(sim.aporte_mensual) }}",
-                    "{{ sim.años }} años",
+                    "{{ sim.anios }} años",
                     "{{ sim.tasa_manual }}%",
                     "${{ '{:,.2f}'.format(sim.total_fijo) }}",
                     "{{ '${:,.2f}'.format(sim.total_cedear) if sim.activo_elegido != 'Personalizado' else '-' }}"
@@ -206,7 +206,7 @@
                 alternateRowStyles: { fillColor: [241, 245, 249] }
             });
 
-            doc.save('Reporte_Simulaciones_{{ user }}.pdf');
+            doc.save('Reporte_Simulaciones_{{ username }}.pdf');
         }
     </script>
 
