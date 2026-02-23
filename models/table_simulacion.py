@@ -9,7 +9,7 @@ class Simulacion(db.Model):
     
     capital_inicial = db.Column(db.Integer, nullable=False)
     aporte_mensual = db.Column(db.Integer, nullable=False)
-    años = db.Column(db.Integer, nullable=False)
+    anios = db.Column(db.Integer, nullable=False)
     tasa_manual = db.Column(db.Float, nullable=False)
     activo_elegido = db.Column(db.String(50), nullable=True)
     total_fijo = db.Column(db.Float, nullable=True)
