@@ -1,5 +1,5 @@
 import os
-from werkzeug.security import generate_password_hash, check_password_hash # ¡IMPORTACIÓN AGREGADA ACÁ!
+from werkzeug.security import generate_password_hash, check_password_hash 
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from models.table_user import db, User
 from pprint import pprint #permite mostrar datos complejos de forma facil de leer en consola
@@ -33,7 +33,6 @@ def login():
         # El .first() es para que nos devuelva un objeto con atributos y no una lista
         userFound = User.query.filter_by(email=email).first()
         
-        # SE MODIFICÓ ESTA LÍNEA PARA COMPARAR EL HASH
         if userFound and check_password_hash(userFound.password, password):
             
             # Si el usuario ingresa los datos correctamente, se le guarda el user y el id en la memoria del navegador para que dashboard entienda quien esta en la sesion
@@ -61,7 +60,6 @@ def register():
             flash("ERROR. El email ya esta registrado. Intenta nuevamente.", "error")
             return redirect(url_for('auth.register'))
         
-        # SE HASHEA LA CONTRASEÑA ANTES DE GUARDARLA
         password_hasheada = generate_password_hash(password)
         newUser = User(username=username, email=email, password=password_hasheada)
         
@@ -137,7 +135,7 @@ def reset_password(token):
         user = User.query.filter_by(email=email_del_token).first()
         
         if user:
-            # Reemplaza contraseña vieja por la nueva HASHEADA, se guarda en la DB
+            
             user.password = generate_password_hash(nueva_password)
             db.session.commit()
             
