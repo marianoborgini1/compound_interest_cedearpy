@@ -24,7 +24,7 @@ Una aplicación web Full-Stack diseñada para proyectar el crecimiento del capit
 El sistema utiliza una base de datos relacional 
 El núcleo de **CedearPy** está soportado por una base de datos relacional (PostgreSQL) diseñada para garantizar la integridad de la información y la persistencia de las simulaciones financieras. Contiene dos tablas principales (`User` y `Simulacion`) vinculadas mediante una clave foránea (One-to-Many).
 
-![Diagrama de Base de Datos](static/diagrama_entidad_relacion/cedearpy_diagrama_der.drawio.png)
+![Diagrama de Base de Datos](static/diagramas/cedearpy_der.png)
 
 * **Modelo Relacional (1:N):** La arquitectura utiliza una relación de "Uno a Muchos" entre las entidades `User` y `Simulacion`. Se implementó una llave foránea (`FK id_user`) con restricciones estrictas (`NOT NULL`) para asegurar que cada proyección pertenezca unívocamente a un usuario validado.
 * **Tolerancia a Fallos (Nullable Fields):** Los campos críticos para la fórmula de Interés Compuesto (capital, aportes, plazo, tasa manual) poseen restricciones `NOT NULL` a nivel de base de datos. En contraste, los campos de proyección de mercado (`tasa_cedear`, `total_cedear`) permiten valores `NULL`, garantizando que la aplicación pueda guardar simulaciones de tasa fija incluso ante eventuales caídas de la API externa de Yahoo Finance.
