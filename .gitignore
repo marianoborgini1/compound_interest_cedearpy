@@ -19,7 +19,7 @@ instance/
 
 
 # Variables de Entorno y Secretos (¡CRÍTICO!)
-.env
+*.env
 .flaskenv
 secrets.json
 
