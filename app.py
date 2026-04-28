@@ -27,6 +27,11 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Llama a la clave desde el .env 
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'default_key_flask')
 
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USER')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASS')
 app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_USER')
 
 # Conexion inicializamos y le decimos a la db que esta es nuestra app 
