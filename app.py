@@ -27,6 +27,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Llama a la clave desde el .env 
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'default_key_flask')
 
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_USER')
+
 # Conexion inicializamos y le decimos a la db que esta es nuestra app 
 db.init_app(app)
 

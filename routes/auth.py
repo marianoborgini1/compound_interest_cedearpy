@@ -94,6 +94,7 @@ def forget_password():
             
             email = os.environ.get('MAIL_USER')
             key_app = os.environ.get('MAIL_PASS')
+            app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_USER')
             
             cuerpo_mensaje = f"Hola {userFound.username},\n\nPara restablecer tu contraseña, hacé click en el siguiente enlace. Este enlace caduca en 15 minutos por seguridad:\n\n{link_recuperacion}"
             
